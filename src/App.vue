@@ -14,24 +14,15 @@
           transition="scale-transition"
           width="100"
         />
-
-        <v-icon
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          width="100"
-        >
-        </v-icon>
       </div>
-
       <v-spacer></v-spacer>
-
       <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
         target="_blank"
-        text
+        color="#6D2080"
+        outlined
       >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
+        <v-icon>mdi-keyboard-return</v-icon>
+        <span class="mr-2 pl-2 ">Voltar</span>
       </v-btn>
     </v-app-bar>
 
