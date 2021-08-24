@@ -95,7 +95,7 @@
         // this.FlagSlice = this.FlagList.slice(0, 12);
       },
 
-      filter(){
+      async filter(){
         switch (this.filtered) {
           case "1":
             this.axios.get('https://restcountries.eu/rest/v2/all?fields=region')
@@ -116,22 +116,44 @@
             })
             break;
           case "3":
-            this.axios.get('https://restcountries.eu/rest/v2/all?fields=languages')
+            await this.axios.get('https://restcountries.eu/rest/v2/all?fields=languages')
             .then((res)=>{
               this.linguas = res.data;
             })
             this.filterList = this.linguas.map((lingua)=>{
-              for(var i=0;i<lingua.languages.lenght;i++){
-                console.log(lingua.languages.lenght)
+              for(var i=0; i<lingua.languages.length; i++){
                 if(lingua){
                   return {
                     id: lingua.languages[i].iso639_1,
-                    nome: lingua.languages.nativeName
+                    nome: lingua.languages[i].nativeName
                   }
                 }
               }
             })
-            console.log(this.filterList.length)
+            break;
+          case "4":
+              this.axios.get('https://restcountries.eu/rest/v2/all?fields=name')
+            .then((res)=>{
+              this.filterList = res.data.filter(element => {
+                element.nome = element.name
+                return element;
+              })
+            })
+            break;
+          case "5":
+            await this.axios.get('https://restcountries.eu/rest/v2/all?fields=callingCodes')
+            .then((res)=>{
+              this.calling = res.data;
+            })
+            this.filterList = this.calling.map((call)=>{
+              for(var i=0; i<call.callingCodes.length; i++){
+                if(call){
+                  return {
+                    nome: call.callingCodes[i]
+                  }
+                }
+              }
+            })
             break;
           default:
             this.axios.get('https://restcountries.eu/rest/v2/all?fields=name')
@@ -141,6 +163,7 @@
                 return element;
               })
             })
+            break;
         }
       }
     },
