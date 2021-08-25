@@ -82,6 +82,35 @@
 					</v-flex>
 				</v-flex>
 			</v-layout>
+			<v-layout>
+				<v-card elevation="0" class="mt-md-12">
+					<v-card-text v-if="paisesVizinhos.length>0">
+						Países vizinhos
+					</v-card-text>
+					<v-card-text v-else>
+						Esse país não possui países vizinhos
+					</v-card-text>
+				</v-card>
+			</v-layout>
+			<v-layout row wrap>
+				<v-flex d-flex>
+					<v-layout wrap>
+						<v-flex md4 sm4 v-for="vizinho in paisesVizinhos" :key="vizinho.id">
+							<v-hover v-slot="{ hover }">
+								<v-card class="card-container">
+									<v-img 
+										:class="{ 'on-hover': hover }" 
+										:src="vizinho.flag" 
+										height="200px" 
+										@click="[informations(vizinho.alpha2Code)]"
+									>
+									</v-img>
+								</v-card>
+							</v-hover>
+						</v-flex>
+					</v-layout> 
+				</v-flex>
+			</v-layout>
 		</v-container>
 	</div>
 </template>
@@ -136,7 +165,7 @@ export default {
 					this.FlagList = res.data.map(element => {
 						return {
 							flag: element.flag,
-							alpha: element.alpha2Code
+							alpha2Code: element.alpha2Code
 						}
 					});
 				})
@@ -157,7 +186,7 @@ export default {
 			await this.axios.get(`https://restcountries.eu/rest/v2/alpha/${alpha2Code}?fields=name;flag;region;capital;languages;alpha2Code;population;subregion;borders`)
 			.then((res)=>{
 				this.pais = res.data
-				for(var vizinhos = 0; vizinhos<res.data.length; vizinhos++){
+				for(var vizinhos = 0; vizinhos<res.data.borders.length; vizinhos++){
 					this.axios.get(`https://restcountries.eu/rest/v2/alpha/${res.data.borders[vizinhos]}?fields=flag;alpha2Code`)
 					.then((response)=>{
 						this.paisesVizinhos.push({
@@ -167,6 +196,7 @@ export default {
 					})
 				}
 			})
+			console.log(this.paisesVizinhos)
 			this.viewPais = true
 		},
 
