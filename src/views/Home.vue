@@ -1,6 +1,6 @@
 <template>
 <div>
-		<v-container>
+		<v-container v-show="!viewPais">
 			<v-row class="pl-1 pt-7 pb-7">
 				<v-flex xs12 sm4>	
 					<v-autocomplete
@@ -9,7 +9,7 @@
 						label="Escolha uma opção"
 						item-text="nome"
 						item-value="value"
-						@change="filter($event)"
+						@change="[filtro2 = null, filter($event)]"
 						hide-details
 						clearable
 						style="width: 80%"
@@ -43,13 +43,49 @@
 			</v-row>
 			<v-row>
 				<v-flex v-for="flag in FlagList" :key="flag.index" sm4 xs12>
-					<img width="80%" height="80%" :src="flag.flag"/>
+					<img width="80%" height="80%" :src="flag.flag" @click="informations(flag.alpha2Code)"/>
 				</v-flex>
 			</v-row>
 		</v-container>
+		<v-container v-show="viewPais" grid-list-xl class="mt-md-12">
+			<v-layout row wrap>
+				<v-flex d-flex xs12 sm6 md5>
+					<v-card elevation="0">
+						<v-img :src="pais.flag" height="100%"> </v-img>
+					</v-card>
+				</v-flex>
+				<v-flex d-flex xs12 sm6 md7>
+					<v-flex d-flex>
+						<v-layout row wrap>
+							<v-card elevation="0">
+								<v-card-subtitle>
+									Nome: {{pais.name}}
+								</v-card-subtitle>
+								<v-card-subtitle>
+									Capital: {{pais.capital}}
+								</v-card-subtitle>
+								<v-card-subtitle>
+									Região: {{pais.region}}
+								</v-card-subtitle>
+								<v-card-subtitle>
+									Sub-região: {{pais.subregion}}
+								</v-card-subtitle>
+								<v-card-subtitle>
+									População: {{pais.population}}
+								</v-card-subtitle>
+								<v-card-subtitle>
+									Línguas: 
+									<span v-for="language in pais.languages" :key="language.index">{{language.nativeName}}, </span>
+								</v-card-subtitle>
+							</v-card>
+						</v-layout>
+					</v-flex>
+				</v-flex>
+			</v-layout>
+		</v-container>
 	</div>
 </template>
-          
+
 <script>
 // import ArticleItem from "./ArticleItem"
 export default {
@@ -60,50 +96,78 @@ export default {
 	data: () => ({
 		Filtros: [
 		{
-          nome: "Região",
-          value: "region"
+			nome: "Região",
+			value: "region"
 		},
 		{
-          nome: "Capital",
-          value: "capital"
+			nome: "Capital",
+			value: "capital"
 		},
 		{
-          nome: "Língua",
-          value: "lang"
+			nome: "Língua",
+			value: "lang"
 		},
 		{
-          nome: "País",
-          value: "name"
+			nome: "País",
+			value: "name"
 		},
 		{
-          nome: "Código de ligação",
-          value: "callingcode"
+			nome: "Código de ligação",
+			value: "callingcode"
 		},
 	],
+	pais:[],
+	paisesVizinhos: [],
+	viewPais: false,
 	linguas: [],
-     filtro2: null,
-     filtered: null,
-     article: [],
-     FlagList: [],
-     filterList:[],
+    filtro2: null,
+    filtered: null,
+    article: [],
+    FlagList: [],
+    filterList:[],
 	}),
 	methods:{
 
      //Método para pegar apenas os links das bandeiras de cada país
 		getFlags(filtered, filtro2){
 			if(filtro2 != null){
-				this.axios.get(`https://restcountries.eu/rest/v2/${filtered}/${filtro2}?fields=flag`)
+				this.axios.get(`https://restcountries.eu/rest/v2/${filtered}/${filtro2}?fields=flag;alpha2Code`)
 				.then((res) => {
-					this.FlagList = res.data;
+					this.FlagList = res.data.map(element => {
+						return {
+							flag: element.flag,
+							alpha: element.alpha2Code
+						}
+					});
 				})
 			}else{
-				this.axios.get(`https://restcountries.eu/rest/v2/${filtered}?fields=flag`)
+				this.axios.get(`https://restcountries.eu/rest/v2/${filtered}?fields=flag;alpha2Code`)
 				.then((res) => {
-					this.FlagList = res.data;
+					this.FlagList = res.data.map(element => {
+						return {
+							flag: element.flag,
+							alpha2Code: element.alpha2Code
+						}
+					});
 				})
 			}
-			
-		// this.FlagSlice = this.FlagList.slice(0, 12);
+		},
+
+		async informations(alpha2Code){
+			await this.axios.get(`https://restcountries.eu/rest/v2/alpha/${alpha2Code}?fields=name;flag;region;capital;languages;alpha2Code;population;subregion;borders`)
+			.then((res)=>{
+				this.pais = res.data
+				for(var vizinhos = 0; vizinhos<res.data.length; vizinhos++){
+					this.axios.get(`https://restcountries.eu/rest/v2/alpha/${res.data.borders[vizinhos]}?fields=flag;alpha2Code`)
+					.then((response)=>{
+						this.paisesVizinhos.push({
+							alpha2Code: response.data.alpha2Code,
+							flag: response.data.flag
+						})
+					})
+				}
+			})
+			this.viewPais = true
 		},
 
 		async filter(){
