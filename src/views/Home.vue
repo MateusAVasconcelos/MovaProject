@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<cabeca :view="viewPais" :visible="filtered" @clicked="back"></cabeca>
+		<cabecalho :view="viewPais" :visible="filtered" @clicked="back"></cabecalho>
 		<v-container v-show="!viewPais">
 			<v-row class="pl-1 pt-7 pb-7">
 				<v-flex md4 xs12 sm6>	
@@ -11,10 +11,10 @@
 						item-text="nome"
 						item-value="value"
 						@change="[filter($event), filtro2 = null]"
-						hide-details
 						clearable
 						style="width: 80%"
 						color="#6D2080"
+						item-color="#6D2080"
 					>
 					</v-autocomplete>
 				</v-flex>
@@ -25,10 +25,10 @@
 						:items="filterList"
 						item-text="nome"
 						item-value="value"
-						:label="filtered"
+						:label="nameFilter"
 						style="width: 80%"
-						hide-details
 						color="#6D2080"
+						item-color="#6D2080"
 						>
 					</v-autocomplete>
 				</v-flex>
@@ -44,11 +44,12 @@
 				</v-flex>
 			</v-row>
 			<v-row>
-				<v-flex v-for="flag in paginaFlagList" :key="flag.index" sm4 xs12>
-					<v-card width="80%" height="80%">
-					<img 
+				<v-flex sm4 xs12 md4 class="pl-6 pr-6 pa-4" v-for="flag in paginaFlagList" :key="flag.index">
+					<v-card  width="80%" height="200px">
+					<img
+						class="linkClickable" 
 						width="100%" 
-						height="100%" 
+						height="200px" 
 						:src="flag.flag" 
 						@click="informations(flag.alpha2Code)"
 					/>
@@ -118,25 +119,23 @@
 			<v-layout row wrap>
 				<v-flex d-flex>
 					<v-layout wrap>
-						<v-flex md4 sm4 v-for="vizinho in paisesVizinhos" :key="vizinho.id">
-							<v-hover v-slot="{ hover }">
-								<v-card class="card-container">
-									<v-img 
-										:class="{ 'on-hover': hover }" 
-										:src="vizinho.flag" 
-										height="200px" 
-										@click="[informations(vizinho.alpha2Code)]"
-									>
-									</v-img>
-								</v-card>
-							</v-hover>
+						<v-flex md4 sm4 v-for="vizinho in paginaVizinhos" :key="vizinho.id">
+							<v-card class="card-container">
+								<v-img 
+									class="linkClickable" 
+									:src="vizinho.flag" 
+									height="200px" 
+									@click="[informations(vizinho.alpha2Code)]"
+								>	
+								</v-img>
+							</v-card>
 						</v-flex>
 					</v-layout> 
 				</v-flex>
 			</v-layout>
 			<v-pagination v-if="paisesVizinhos.length>0"
 				v-model="pageVizinho"
-				:length="Math.ceil(paisesVizinhos.length/perPage)"
+				:length="Math.ceil(paisesVizinhos.length/perPageVizinho)"
 				@input="visiblePagesVizinhos($event)"
 				class="pt-4"
 				color="purple"
@@ -151,7 +150,7 @@
 export default {
 	name: 'Home',
 	components: {
-		cabeca: () => import('../components/cabeca')
+		cabecalho: () => import('../components/cabecalho')
 	},
 	data: () => ({
 
@@ -188,9 +187,11 @@ export default {
 	pageVizinho: 1,
 	page: 1,
 	perPage: 12,
+	perPageVizinho: 3,
 	viewPais: false,
     filtro2: null,
     filtered: null,
+	nameFilter: null
     
 	}),
 	methods:{
@@ -244,6 +245,7 @@ export default {
 			switch (this.filtered) {
 				//filtro por região
 				case "region":
+					this.nameFilter = "Região"
 					this.axios.get('https://restcountries.eu/rest/v2/all?fields=region')
 					.then((res)=> {
 						this.filterList = res.data.filter(element => {
@@ -255,6 +257,7 @@ export default {
 				break;
 				//filtro por capital
 				case "capital":
+					this.nameFilter = "Capital"
 					this.axios.get('https://restcountries.eu/rest/v2/all?fields=capital')
 					.then((res)=>{
 						this.filterList = res.data.filter(element => {
@@ -266,6 +269,7 @@ export default {
 				break;
 				//filtro por língua
 				case "lang":
+					this.nameFilter = "Língua"
 					await this.axios.get('https://restcountries.eu/rest/v2/all?fields=languages')
 					.then((res)=>{
 						this.linguas = res.data;
@@ -283,6 +287,7 @@ export default {
 				break;
 				//filtro por país
 				case "name":
+					this.nameFilter = "País"
 					this.axios.get('https://restcountries.eu/rest/v2/all?fields=name')
 					.then((res)=>{
 						this.filterList = res.data.filter(element => {
@@ -294,6 +299,7 @@ export default {
 				break;
 				//filtro por codigo de ligação
 				case "callingcode":
+					this.nameFilter = "Código de ligação"
 					await this.axios.get('https://restcountries.eu/rest/v2/all?fields=callingCodes')
 					.then((res)=>{
 						this.calling = res.data;
@@ -355,5 +361,6 @@ export default {
 	color: purple;
 	text-decoration: underline;
 	text-decoration-color: purple;
+	cursor: pointer;
 }
 </style>

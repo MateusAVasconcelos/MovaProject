@@ -11,8 +11,8 @@
 			contain
 			src="https://mova.vc/img/footer_mova.svg"
 			transition="scale-transition"
-			width="100"
-			height="60"
+			width="80"
+			height="80"
 		/>
 		</div>
 		<v-spacer></v-spacer>
