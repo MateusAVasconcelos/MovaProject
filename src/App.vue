@@ -5,7 +5,7 @@
 			color="white"
 			dark
 	>
-     <div class="d-flex align-center">
+    <div class="d-flex align-center">
 		<v-img
 			alt="Mova Logo"
 			class="shrink mr-2"

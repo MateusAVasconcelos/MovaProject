@@ -42,10 +42,18 @@
 				</v-flex>
 			</v-row>
 			<v-row>
-				<v-flex v-for="flag in FlagList" :key="flag.index" sm4 xs12>
+				<v-flex v-for="flag in paginaFlagList" :key="flag.index" sm4 xs12>
 					<img width="80%" height="80%" :src="flag.flag" @click="informations(flag.alpha2Code)"/>
 				</v-flex>
 			</v-row>
+			<v-pagination
+				v-model="page"
+				:length="Math.ceil(FlagList.length/perPage)"
+				@input="visiblePages($event)"
+				class="pt-4"
+				color="purple"
+			>
+			</v-pagination>
 		</v-container>
 		<v-container v-show="viewPais" grid-list-xl class="mt-md-12">
 			<v-layout row wrap>
@@ -65,7 +73,13 @@
 									Capital: {{pais.capital}}
 								</v-card-subtitle>
 								<v-card-subtitle>
-									Região: {{pais.region}}
+									Região: 
+									<span
+										class="linkClickable"
+										@click="[filtered='region', filtro2 = pais.region, viewPais = false,filter(), getFlags(filtered, filtro2)]"
+									> 
+										{{pais.region}} 
+									</span>
 								</v-card-subtitle>
 								<v-card-subtitle>
 									Sub-região: {{pais.subregion}}
@@ -147,12 +161,16 @@ export default {
 	],
 	pais:[],
 	paisesVizinhos: [],
+	paginaVizinhos: [],
 	viewPais: false,
 	linguas: [],
+	page: 1,
+	perPage: 12,
     filtro2: null,
     filtered: null,
     article: [],
     FlagList: [],
+	paginaFlagList: [],
     filterList:[],
 	}),
 	methods:{
@@ -168,6 +186,7 @@ export default {
 							alpha2Code: element.alpha2Code
 						}
 					});
+					this.paginaFlagList = res.data.slice((this.page - 1)* this.perPage, this.page* this.perPage)
 				})
 			}else{
 				this.axios.get(`https://restcountries.eu/rest/v2/${filtered}?fields=flag;alpha2Code`)
@@ -178,11 +197,13 @@ export default {
 							alpha2Code: element.alpha2Code
 						}
 					});
+					this.paginaFlagList = res.data.slice((this.page - 1)* this.perPage, this.page* this.perPage)
 				})
 			}
 		},
 
 		async informations(alpha2Code){
+			this.paisesVizinhos = [],
 			await this.axios.get(`https://restcountries.eu/rest/v2/alpha/${alpha2Code}?fields=name;flag;region;capital;languages;alpha2Code;population;subregion;borders`)
 			.then((res)=>{
 				this.pais = res.data
@@ -280,10 +301,21 @@ export default {
 					})
 				break;
 			}
-		}
+		},
+		visiblePages(){
+			this.paginaFlagList = this.FlagList.slice((this.page - 1)* this.perPage, this.page* this.perPage)
+		},
+		
 	},
 	mounted(){
 		this.getFlags("all", null)
 	},
 }
 </script>
+<style scoped>
+.linkClickable {
+	color: purple;
+	text-decoration: underline;
+	text-decoration-color: purple;
+}
+</style>
