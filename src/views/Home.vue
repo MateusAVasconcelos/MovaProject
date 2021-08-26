@@ -1,15 +1,16 @@
 <template>
-<div>
+	<div>
+		<cabeca :view="viewPais" :visible="filtered" @clicked="back"></cabeca>
 		<v-container v-show="!viewPais">
 			<v-row class="pl-1 pt-7 pb-7">
-				<v-flex xs12 sm4>	
+				<v-flex md4 xs12 sm6>	
 					<v-autocomplete
 						v-model="filtered"
 						:items="Filtros"
 						label="Escolha uma opção"
 						item-text="nome"
 						item-value="value"
-						@change="[filtro2 = null, filter($event)]"
+						@change="[filter($event), filtro2 = null]"
 						hide-details
 						clearable
 						style="width: 80%"
@@ -17,7 +18,7 @@
 					>
 					</v-autocomplete>
 				</v-flex>
-				<v-flex xs12 sm4>
+				<v-flex md4 xs12 sm6>
 					<v-autocomplete
 						v-model="filtro2"
 						v-if="filtered"
@@ -31,8 +32,9 @@
 						>
 					</v-autocomplete>
 				</v-flex>
-				<v-flex xs12 sm4>
+				<v-flex md4 xs12 sm6>
 					<v-btn
+					v-if="filtro2 != null"
 					color="#6D2080"
 					dark
 					@click="[getFlags(filtered, filtro2)]"	
@@ -43,7 +45,14 @@
 			</v-row>
 			<v-row>
 				<v-flex v-for="flag in paginaFlagList" :key="flag.index" sm4 xs12>
-					<img width="80%" height="80%" :src="flag.flag" @click="informations(flag.alpha2Code)"/>
+					<v-card width="80%" height="80%">
+					<img 
+						width="100%" 
+						height="100%" 
+						:src="flag.flag" 
+						@click="informations(flag.alpha2Code)"
+					/>
+					</v-card>
 				</v-flex>
 			</v-row>
 			<v-pagination
@@ -125,6 +134,14 @@
 					</v-layout> 
 				</v-flex>
 			</v-layout>
+			<v-pagination v-if="paisesVizinhos.length>0"
+				v-model="pageVizinho"
+				:length="Math.ceil(paisesVizinhos.length/perPage)"
+				@input="visiblePagesVizinhos($event)"
+				class="pt-4"
+				color="purple"
+			>
+			</v-pagination>
 		</v-container>
 	</div>
 </template>
@@ -134,9 +151,10 @@
 export default {
 	name: 'Home',
 	components: {
-      // ArticleItem,
+		cabeca: () => import('../components/cabeca')
 	},
 	data: () => ({
+
 		Filtros: [
 		{
 			nome: "Região",
@@ -162,16 +180,18 @@ export default {
 	pais:[],
 	paisesVizinhos: [],
 	paginaVizinhos: [],
-	viewPais: false,
-	linguas: [],
-	page: 1,
-	perPage: 12,
-    filtro2: null,
-    filtered: null,
-    article: [],
+	article: [],
     FlagList: [],
 	paginaFlagList: [],
-    filterList:[],
+	linguas: [],
+	filterList:[],
+	pageVizinho: 1,
+	page: 1,
+	perPage: 12,
+	viewPais: false,
+    filtro2: null,
+    filtered: null,
+    
 	}),
 	methods:{
 
@@ -203,7 +223,8 @@ export default {
 		},
 
 		async informations(alpha2Code){
-			this.paisesVizinhos = [],
+			this.clear()
+			this.viewPais = true
 			await this.axios.get(`https://restcountries.eu/rest/v2/alpha/${alpha2Code}?fields=name;flag;region;capital;languages;alpha2Code;population;subregion;borders`)
 			.then((res)=>{
 				this.pais = res.data
@@ -217,8 +238,6 @@ export default {
 					})
 				}
 			})
-			console.log(this.paisesVizinhos)
-			this.viewPais = true
 		},
 
 		async filter(){
@@ -301,11 +320,30 @@ export default {
 					})
 				break;
 			}
+			this.clear()
 		},
 		visiblePages(){
 			this.paginaFlagList = this.FlagList.slice((this.page - 1)* this.perPage, this.page* this.perPage)
 		},
-		
+		visiblePagesVizinhos(){
+			this.paginaVizinhos = this.paisesVizinhos.slice((this.pageVizinho - 1)* this.perPageVizinho, this.pageVizinho* this.perPageVizinho)
+		},
+		back(){
+			if(this.viewPais == true){
+				this.viewPais = false
+			}else{
+				this.filtered = null
+				this.filtro2 = null
+				this.getFlags("all", null)
+			}
+			
+		},
+		clear(){
+			this.paisesVizinhos = []
+			this.paginaVizinhos = []
+			this.page = 1
+			this.pageVizinho = 1
+		},
 	},
 	mounted(){
 		this.getFlags("all", null)
