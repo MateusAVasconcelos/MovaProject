@@ -236,7 +236,7 @@ export default {
 							alpha2Code: response.data.alpha2Code,
 							flag: response.data.flag
 						})
-					})
+this.paginaVizinhos = this.paisesVizinhos.slice((this.pageVizinho - 1)* this.perPageVizinho, this.pageVizinho* this.perPageVizinho)					})
 				}
 			})
 		},
